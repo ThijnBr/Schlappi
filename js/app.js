@@ -12,6 +12,7 @@ document.getElementById('uploadButton').addEventListener('click', function() {
         document.getElementById('uploadContainer').style.display = 'none'; 
         document.getElementById('info').style.display = 'block';
         document.getElementById('zoomControls').style.display = 'block';
+        document.getElementById('colorContainer').style.display = 'block';
         
         // Start de Three.js scene met de afbeelding als argument
         init(event.target.result);
@@ -22,6 +23,7 @@ document.getElementById('uploadButton').addEventListener('click', function() {
 import * as THREE from 'three';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
+import { addColorContainer } from './materialcolors.js'
 //import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DragControls } from 'three/addons/controls/DragControls.js';
@@ -41,7 +43,7 @@ let objects = [];
 let lights = [];
 let doekTeller = 0;
 let kleurTeller = -1;
-let kleurArray = [0xffffff, 0x80003a, 0x506432, 0xffc500, 0xb30019, 0xec410b, 0xffffff];
+let kleurArray = [0xffffff, 0x80003a, 0x506432, 0xffc500, 0xb30019, 0xec410b];
 let raycaster = new THREE.Raycaster();
 let mouse = new THREE.Vector2();
 let isDragging = false;
@@ -96,6 +98,9 @@ scene.add(camera);
     // Nadat de renderer is gedefinieerd, voeg je het domElement toe aan de canvasContainer
     document.getElementById('canvasContainer').appendChild(renderer.domElement);
     document.getElementById('canvasContainer').style.display = 'block';
+
+    // Voeg de container toe met all beschikbare kleuren
+    addColorContainer(kleurArray);
     
     function addEventListeners() {
         renderer.domElement.addEventListener('mousedown', onMouseDown, false);
@@ -345,6 +350,7 @@ function changeColorSpecificMaterials(materialColors) {
         }
     });
 }
+export { changeColorSpecificMaterials };
 
 
 function changeTexture(materialTextures) {
