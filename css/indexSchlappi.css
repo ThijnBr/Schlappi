@@ -1,0 +1,54 @@
+body, html { margin: 0; height: 100%; overflow: hidden; }
+#uploadContainer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
+#info { position: absolute; top: 10px; left: 10px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 10px; }
+canvas { display: block; }
+
+/* Chat box styles */
+#chatBoxContainer {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+    background-color: rgba(255, 255, 255, 0.9);
+    border-radius: 10px;
+    padding: 10px;
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
+    font-family: Arial, sans-serif;
+}
+
+#chatBoxContainer img {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    margin-right: 10px;
+}
+
+#chatBox {
+    max-width: 200px;
+    background-color: #f1f1f1;
+    border-radius: 10px;
+    padding: 10px;
+    position: relative;
+}
+
+#chatBox:after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -10px;
+    border-width: 10px;
+    border-style: solid;
+    border-color: transparent #f1f1f1 transparent transparent;
+}
+
+#nextArrow {
+    margin-left: 10px;
+    cursor: pointer;
+    font-size: 20px;
+    color: gray;
+}
+
+#nextArrow:hover {
+    color: black;
+}

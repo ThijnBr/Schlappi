@@ -3,12 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <title>Three.js Foto met 3D Object</title>
-    <style>
-        body, html { margin: 0; height: 100%; overflow: hidden; }
-        #uploadContainer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
-        #info { position: absolute; top: 10px; left: 10px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 10px; }
-        canvas { display: block; }
-    </style>
+    <link rel="stylesheet" href="css/indexSchlappi.css">
 </head>
 <body>
     <div id="uploadContainer">
@@ -49,6 +44,14 @@
     <div id="canvasContainer" style="display: none;">
         <!-- Three.js canvas zal hier worden toegevoegd door de init functie -->
     </div>
+
+    <!-- Chat box with image -->
+    <div id="chatBoxContainer">
+        <img src="https://via.placeholder.com/60" alt="Avatar" id="chatImage">
+        <div id="chatBox">Hello! Welcome to our app.</div>
+        <div id="nextArrow">→</div>
+    </div>
+
     <script type="importmap">
         {
             "imports": {
@@ -58,5 +61,6 @@
         }
     </script>    
     <script src="js/app.js" type="module"></script>
+    <script src="js/chatbox.js" type="module"></script>
 </body>
 </html>
