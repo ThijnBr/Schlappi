@@ -3,55 +3,95 @@ body, html { margin: 0; height: 100%; overflow: hidden; }
 #info { position: absolute; top: 10px; left: 10px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 10px; }
 canvas { display: block; }
 
-/* Chat box styles */
+/* Chat box container styles */
 #chatBoxContainer {
-    position: fixed;
-    bottom: 20px;
-    right: 20px;
-    display: flex;
-    align-items: center;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 10px;
-    padding: 10px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
+    position: fixed;               /* Fixed position for bottom-right corner */
+    bottom: 20px;                  /* Position 20px from the bottom */
+    right: 20px;                   /* Position 20px from the right */
+    display: flex;                 /* Align the chatbox and arrow horizontally */
+    align-items: center;           /* Vertically center align the contents */
+    background-color: rgba(255, 255, 255, 0.9); /* Semi-transparent white background */
+    border-radius: 10px;           /* Rounded corners */
+    padding: 10px;                 /* Padding around the chatbox */
+    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1); /* Subtle shadow effect */
+    font-family: Arial, sans-serif;/* Use Arial font */
 }
 
+/* Chat box avatar or image */
 #chatBoxContainer img {
-    width: 60px;
-    height: 60px;
-    border-radius: 50%;
-    margin-right: 10px;
+    width: 60px;                   /* Set image width */
+    height: 60px;                  /* Set image height */
+    border-radius: 50%;            /* Make the image circular */
+    margin-right: 10px;            /* Add space between image and chatbox */
 }
 
+/* Chat box styles */
 #chatBox {
-    max-width: 200px;
-    background-color: #f1f1f1;
-    border-radius: 10px;
-    padding: 10px;
-    position: relative;
+    max-width: 200px;              /* Limit chatbox width */
+    max-height: 150px;             /* Limit height to create a scrollable area */
+    background-color: #f1f1f1;     /* Light gray background */
+    border-radius: 10px;           /* Rounded corners for chatbox */
+    padding: 10px;                 /* Inner padding */
+    position: relative;            /* Keep its position relative for arrow effect */
+    overflow-y: auto;              /* Enable vertical scrolling if content is too long */
+    white-space: pre-wrap;         /* Preserve the text and table formatting */
 }
 
+/* Arrow triangle pointing to the chatbox */
 #chatBox:after {
-    content: '';
-    position: absolute;
-    top: 50%;
-    left: -10px;
-    border-width: 10px;
-    border-style: solid;
-    border-color: transparent #f1f1f1 transparent transparent;
+    content: '';                   /* Empty content for the triangle */
+    position: absolute;            /* Absolute position */
+    top: 50%;                      /* Center the arrow vertically */
+    left: -10px;                   /* Position the arrow outside the chatbox */
+    border-width: 10px;            /* Size of the triangle */
+    border-style: solid;           /* Create the triangle with borders */
+    border-color: transparent #f1f1f1 transparent transparent; /* Color and direction of the arrow */
 }
 
+/* Next arrow button */
 #nextArrow {
-    margin-left: 10px;
-    cursor: pointer;
-    font-size: 20px;
-    color: gray;
+    margin-left: 10px;             /* Space between chatbox and arrow */
+    cursor: pointer;               /* Show pointer on hover */
+    font-size: 20px;               /* Font size for the arrow */
+    color: gray;                   /* Default gray color */
 }
 
+/* Hover effect for the arrow */
 #nextArrow:hover {
-    color: black;
+    color: black;                  /* Change arrow color on hover */
 }
+
+/* Table styling within the chatbox */
+#chatBox table {
+    width: 100%;                   /* Full-width table inside the chatbox */
+    border-collapse: collapse;     /* Remove space between table borders */
+    margin-top: 10px;              /* Space between text and table */
+}
+
+#chatBox th, #chatBox td {
+    border: 1px solid #000;        /* Black borders for cells */
+    padding: 5px;                  /* Padding inside each cell */
+    text-align: left;              /* Align text to the left */
+}
+
+#chatBox th {
+    background-color: #ba0000;     /* Blue background for headers */
+    color: white;                  /* White text for headers */
+}
+
+#chatBox td {
+    background-color: #f0f0f0;     /* Light gray background for table cells */
+}
+
+/* Responsive chatbox for smaller screens */
+@media (max-width: 768px) {
+    #chatBox {
+        max-width: 100%;           /* Adjust width to be full screen on small devices */
+        max-height: 200px;         /* Slightly larger height for small devices */
+    }
+}
+
+
 
 /* Container for color title and color boxes */
 #colorContainer {
