@@ -1,4 +1,4 @@
-import { changeColor } from "./app.js";
+import { changeColor } from "../app.js";
 
 export function addColorContainer(kleurArray) {
     const colorContainer = document.getElementById('colorContainer');

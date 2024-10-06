@@ -16,7 +16,8 @@ document.getElementById('uploadButton').addEventListener('click', function() {
         document.getElementById('info').style.display = 'block';
         document.getElementById('zoomControls').style.display = 'block';
         document.getElementById('colorContainer').style.display = 'block';
-        
+        document.getElementById('objectContainer').style.display = 'block';
+
         // Start de Three.js scene met de afbeelding als argument
         init(event.target.result);
     };
@@ -26,15 +27,14 @@ document.getElementById('uploadButton').addEventListener('click', function() {
 import * as THREE from 'three';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { addColorContainer } from './materialcolors.js'
+import { addColorContainer } from './secondary_functions/materialcolors.js'
 //import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DragControls } from 'three/addons/controls/DragControls.js';
 
 let scene, camera, renderer, controls;
-let availableObjects  = ["roller_shutters3", "zonnescherm", "Open_Small_Box"];
-const currentObject = availableObjects[1];
-let selectedObject;
+let availableObjects  = ["roller_shutters3", "zonnescherm"];
+let selectedObject = null;
 let objModel, imagePlane; // Correct gebruik van globale variabelen
 let boxHelper;
 let clipboardObject = null; // Voor het tijdelijk opslaan van het gekopieerde object
@@ -104,6 +104,8 @@ scene.add(camera);
     document.getElementById('canvasContainer').appendChild(renderer.domElement);
     document.getElementById('canvasContainer').style.display = 'block';
 
+    //Voeg de container toe van alle beschikbare objecten bij start.
+    createObjectButtons(availableObjects);
     // Voeg de container toe met all beschikbare kleuren
     addColorContainer(kleurArray);
     
@@ -195,7 +197,36 @@ scene.add(camera);
             controls.enabled = true; // Heractiveer OrbitControls
         }
     }
-    
+
+    // Function to create buttons for each available object at start
+    function createObjectButtons() {
+        const objectButtonsContainer = document.getElementById('objectButtonsContainer');
+        objectButtonsContainer.innerHTML = ''; // Clear any existing buttons
+
+        availableObjects.forEach(object => {
+            // Create a button for each object
+            const button = document.createElement('button');
+            
+            // Create an image element
+            const img = document.createElement('img');
+            img.src = `img/${object}.jpg`; // Set the source to the image path
+            img.alt = object; // Set alt text for accessibility
+            img.style.width = '100%'; // Make image fill the button width
+            img.style.height = 'auto'; // Keep image aspect ratio
+            img.style.borderRadius = '5px'; // Round the corners of the image
+
+            // Add click event to load the selected object
+            button.onclick = () => {
+                loadSelectedObject(object); // Call the function to load the selected object
+                document.getElementById('objectContainer').style.display = 'none'; // Hide the object container
+            };
+
+            // Append image to button and button to the container
+            button.appendChild(img);
+            objectButtonsContainer.appendChild(button);
+        });
+    }
+
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.enableDamping = true;
     //controls.dampingFactor = 0.05;
@@ -260,13 +291,14 @@ scene.add(camera);
     const mtlExt = ".mtl";
     const basePath = "obj/"
 
+function loadSelectedObject(object_name){
     // MTL Loader
-    mtlLoader.load(basePath + currentObject + mtlExt, (materials) => {
+    mtlLoader.load(basePath + object_name + mtlExt, (materials) => {
     materials.preload();
     
         // OBJ model laden
         objLoader.setMaterials(materials);
-        objLoader.load(basePath + currentObject + objExt, function(object) {
+        objLoader.load(basePath + object_name + objExt, function(object) {
             object.scale.setScalar(1);
             objModel = object;
             
@@ -319,9 +351,11 @@ scene.add(camera);
             objModel.position.x = 0;
             switchableObjects.push(objModel);
             
+            
             checkAllAssetsLoaded(); // En hier weer
         });
     });
+}
     
 function checkAllAssetsLoaded() {
         assetsLoaded++;
@@ -401,7 +435,10 @@ function scaleObject(object, bool) {
         object.scale.z *= 0.99;
     }
     updateBoundingBox();
+    repeatTexture(object);
+}
 
+function repeatTexture(object){
     // Get all textures and set based on object scale
     object.traverse(function (child) {
         if (child.isMesh && child.material && child.material.map && doekTeller != 1) {
@@ -630,10 +667,12 @@ function onDocumentKeyDown(event) {
             break;
         case 'w':
             if (selectedObject) selectedObject.scale.x *= 0.99;
+            repeatTexture(selectedObject);
             updateBoundingBox();
             break;
         case 'W':
             if (selectedObject) selectedObject.scale.x *= 1.01;
+            repeatTexture(selectedObject);
             updateBoundingBox();
             break;
         case 'k':
