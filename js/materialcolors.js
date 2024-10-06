@@ -1,4 +1,4 @@
-import { changeColorSpecificMaterials } from "./app.js";
+import { changeColor } from "./app.js";
 
 export function addColorContainer(kleurArray) {
     const colorContainer = document.getElementById('colorContainer');
@@ -31,7 +31,7 @@ export function addColorContainer(kleurArray) {
 }
 
 function handleColorChange(selectedColor) {
-    changeColorSpecificMaterials([
+    changeColor([
         { name: 'Doek_Boven', color: selectedColor },
         { name: 'Doek_Onder', color: selectedColor }
     ]);

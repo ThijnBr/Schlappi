@@ -1,6 +1,6 @@
 // Example sentences for the chatbox, including the table as HTML
 const sentences = [
-    "Hallo! Klik volgende voor de instructies.",
+    "Hallo! Klik volgende voor de instructies",
     "Upload uw foto en druk op de knop.",
     "Kies een kleur.",
     `------------------------------------------------------------------

@@ -1,7 +1,10 @@
 body, html { margin: 0; height: 100%; overflow: hidden; }
-#uploadContainer { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); }
 #info { position: absolute; top: 10px; left: 10px; color: white; background-color: rgba(0, 0, 0, 0.5); padding: 10px; }
 canvas { display: block; }
+
+body {
+    font-family: Arial, sans-serif;/* Use Arial font */
+}
 
 /* Chat box container styles */
 #chatBoxContainer {
@@ -128,4 +131,79 @@ canvas { display: block; }
     height: 50px;
     margin: 0 5px; /* Added horizontal margin */
     border: 2px solid #000; /* Add border for better visibility */
+}
+
+.wrapper {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    align-items: center;
+}
+
+@media only screen and (max-width: 768px){
+    .wrapper {
+        flex-direction: column;
+    }
+}
+
+.home-image {
+    flex: 1 0 50%;
+    height: 100%;;
+    position: relative;
+}
+
+.home-image img {
+        position: absolute;
+        inset: 0;
+        object-fit: cover;
+        width: 100%;
+        height: 100%;
+}
+
+.home-form {
+    flex: 1 0 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#uploadContainer{
+    margin: 32px;
+    padding: 32px;
+    border: 1px solid #eee;
+    box-shadow:  0 10px 10px -10px rgba(0,0,0,.5);
+    display: flex;
+    flex-direction: column;
+    max-width: calc(100% - 64px);
+    justify-content: center;
+    align-items: center;
+    gap: 8px;
+    line-height: 24px;
+}
+
+#uploadContainer img {
+    width: 50%;
+}
+
+#uploadButton {
+    flex: 0 1 auto;
+    background-color: black;
+    padding: 16px 8px;
+    color: white;
+    border-radius: 0 24px 24px 0;
+    font-weight: bold;
+    width: 50%;
+    align-self: flex-end;
+}
+
+.upload-wrapper {
+    display: flex;
+    align-items: center;
+    width: 100%;
+}
+
+.upload-wrapper input {
+    flex: 2 0 auto;
+    background-color: #eee;
+    padding: 16px 8px;
 }

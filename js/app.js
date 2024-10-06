@@ -10,6 +10,9 @@ document.getElementById('uploadButton').addEventListener('click', function() {
     fileReader.onload = function(event) {
         // Verberg de upload interface en toon de legenda
         document.getElementById('uploadContainer').style.display = 'none'; 
+        document.getElementById('homeImage').style.display = 'none'; 
+        document.getElementById('homeForm').style.display = 'none'; 
+        document.getElementById('uploadContainer').style.display = 'none'; 
         document.getElementById('info').style.display = 'block';
         document.getElementById('zoomControls').style.display = 'block';
         document.getElementById('colorContainer').style.display = 'block';
@@ -29,6 +32,8 @@ import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DragControls } from 'three/addons/controls/DragControls.js';
 
 let scene, camera, renderer, controls;
+let availableObjects  = ["roller_shutters3", "zonnescherm", "Open_Small_Box"];
+const currentObject = availableObjects[1];
 let selectedObject;
 let objModel, imagePlane; // Correct gebruik van globale variabelen
 let boxHelper;
@@ -251,15 +256,17 @@ scene.add(camera);
         checkAllAssetsLoaded(); // Roep deze functie aan na het laden van elke asset
     };
     
-
+    const objExt = ".obj";
+    const mtlExt = ".mtl";
+    const basePath = "obj/"
 
     // MTL Loader
-    mtlLoader.load('obj/zonnescherm.mtl', (materials) => {
+    mtlLoader.load(basePath + currentObject + mtlExt, (materials) => {
     materials.preload();
     
         // OBJ model laden
         objLoader.setMaterials(materials);
-        objLoader.load('obj/zonnescherm.obj', function(object) {
+        objLoader.load(basePath + currentObject + objExt, function(object) {
             object.scale.setScalar(1);
             objModel = object;
             
@@ -302,7 +309,6 @@ scene.add(camera);
                             metalness: 1.0, // IJzer is een metaal, dus metalness is hoog
                         });
                     }
-                    
                     // Vergeet niet needsUpdate te zetten indien nodig
                     child.material.needsUpdate = true;
                 }
@@ -334,23 +340,22 @@ function checkAllAssetsLoaded() {
     animate();
 }
 
-function changeColorSpecificMaterials(materialColors) {
+function changeColor(materialColors) {
     objModel.traverse(function(child) {
         if (child.isMesh) {
             let materials = Array.isArray(child.material) ? child.material : [child.material];
             materials.forEach(material => {
-                // Vind het kleurobject voor het huidige materiaal, indien aanwezig
+                // Zet de kleur bovenop het huidige materiaal
                 const materialColorObject = materialColors.find(m => m.name === material.name);
                 if (materialColorObject) {
-                    material.map = null; // Verwijder de textuur
-                    material.color.set(materialColorObject.color); // Zet de kleur van de specifieke materiaalnaam
+                    material.color.set(materialColorObject.color); 
                     material.needsUpdate = true;
                 }
             });
         }
     });
 }
-export { changeColorSpecificMaterials };
+export { changeColor };
 
 
 function changeTexture(materialTextures) {
@@ -365,12 +370,44 @@ function changeTexture(materialTextures) {
                         if (material.name === materialTexture.name) {
                             material.color.set(0xffffff); 
                             material.map = newTexture;
+                            
+                            // Set the texture to repeat, if not, scale the texture with object size.   
+                            let texture = material.map;      
+                            if(doekTeller != 1){
+                                texture.wrapS = THREE.RepeatWrapping;
+                                texture.wrapT = THREE.RepeatWrapping;
+                                texture.repeat.set( selectedObject.scale.x, selectedObject.scale.y );
+                            }         
+
                             material.needsUpdate = true;
                         }
                     });
                 }
             });
         });
+    });
+}
+
+
+function scaleObject(object, bool) {
+    // Scale the object based on the boolean value
+    if (bool === true) {
+        object.scale.x *= 1.01;
+        object.scale.y *= 1.01;
+        object.scale.z *= 1.01;
+    } else {
+        object.scale.x *= 0.99;
+        object.scale.y *= 0.99;
+        object.scale.z *= 0.99;
+    }
+    updateBoundingBox();
+
+    // Get all textures and set based on object scale
+    object.traverse(function (child) {
+        if (child.isMesh && child.material && child.material.map && doekTeller != 1) {
+            let texture = child.material.map;
+            texture.repeat.set( object.scale.x, object.scale.y );
+        }
     });
 }
 
@@ -509,6 +546,8 @@ function changeLightDirection(direction) {
     directionalLight.target.updateMatrixWorld();
 }
 
+
+
 function updateZoomPercent() {
     document.getElementById('zoomPercent').value = `${zoomFactor}%`;
 }
@@ -573,21 +612,15 @@ function onDocumentKeyDown(event) {
                 currentIndex = switchableObjects.length - 1; // Update de huidige index naar het nieuw toegevoegde object
             }
             break;
-        case '+': // Voor schaalvergroting met '+' (gebruikers moeten 'Shift+ =' drukken)
+        case '+': // Voor schaalvergroting met '+' (gebruikers moeten 'Shift+ =' drukken) true for upscale
             if (selectedObject) {
-                selectedObject.scale.x *= 1.01;
-                selectedObject.scale.y *= 1.01;
-                selectedObject.scale.z *= 1.01;
+                scaleObject(selectedObject, true);
             }
-            updateBoundingBox();
             break;
-        case '-': // Voor schaalverkleining
+        case '-': // Voor schaalverkleining, false for down
             if (selectedObject) {
-                selectedObject.scale.x *= 0.99;
-                selectedObject.scale.y *= 0.99;
-                selectedObject.scale.z *= 0.99;
+                scaleObject(selectedObject, false);
             }
-            updateBoundingBox();
             break;
         case 'l':
             switchLighting();
