@@ -15,8 +15,8 @@ document.getElementById('uploadButton').addEventListener('click', function() {
         document.getElementById('uploadContainer').style.display = 'none'; 
         document.getElementById('info').style.display = 'block';
         document.getElementById('zoomControls').style.display = 'block';
-        document.getElementById('colorContainer').style.display = 'block';
         document.getElementById('objectContainer').style.display = 'block';
+        document.getElementById('materialContainer').style.display = 'block';
 
         // Start de Three.js scene met de afbeelding als argument
         init(event.target.result);
@@ -27,15 +27,20 @@ document.getElementById('uploadButton').addEventListener('click', function() {
 import * as THREE from 'three';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
 import { MTLLoader } from 'three/addons/loaders/MTLLoader.js';
-import { addColorContainer } from './secondary_functions/materialcolors.js'
+
 //import { PCDLoader } from 'three/addons/loaders/PCDLoader.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { DragControls } from 'three/addons/controls/DragControls.js';
+
+//import of secondary functions
+import { createMaterialButtons } from './secondary_functions/materialSelectButtons.js';
+import { changeTexture } from './secondary_functions/materialAndColorHandler.js';
 
 let scene, camera, renderer, controls;
 let availableObjects  = ["roller_shutters3", "zonnescherm"];
 let selectedObject = null;
 let objModel, imagePlane; // Correct gebruik van globale variabelen
+export {objModel};
 let boxHelper;
 let clipboardObject = null; // Voor het tijdelijk opslaan van het gekopieerde object
 let switchableObjects = []; // Lijst van objecten waartussen geschakeld kan worden
@@ -46,7 +51,14 @@ let newColor = 0;
 let newTexturePath = 0;
 let objects = [];
 let lights = [];
-let doekTeller = 0;
+
+let doekTeller = 1;
+export {doekTeller};
+
+// lijst van doeken die texture niet gerepeat moet worden. 0 is standaard waarde, 1 is doek1.jpg
+let notRepeatTexture = [0,1];
+export {notRepeatTexture};
+
 let kleurTeller = -1;
 let kleurArray = [0xffffff, 0x80003a, 0x506432, 0xffc500, 0xb30019, 0xec410b];
 let raycaster = new THREE.Raycaster();
@@ -105,9 +117,9 @@ scene.add(camera);
     document.getElementById('canvasContainer').style.display = 'block';
 
     //Voeg de container toe van alle beschikbare objecten bij start.
-    createObjectButtons(availableObjects);
-    // Voeg de container toe met all beschikbare kleuren
-    addColorContainer(kleurArray);
+    createSelectObjectButtons(availableObjects);
+    // Voeg de container toe met alle beschikbare materialen
+    createMaterialButtons(kleurArray);
     
     function addEventListeners() {
         renderer.domElement.addEventListener('mousedown', onMouseDown, false);
@@ -198,35 +210,6 @@ scene.add(camera);
         }
     }
 
-    // Function to create buttons for each available object at start
-    function createObjectButtons() {
-        const objectButtonsContainer = document.getElementById('objectButtonsContainer');
-        objectButtonsContainer.innerHTML = ''; // Clear any existing buttons
-
-        availableObjects.forEach(object => {
-            // Create a button for each object
-            const button = document.createElement('button');
-            
-            // Create an image element
-            const img = document.createElement('img');
-            img.src = `img/${object}.jpg`; // Set the source to the image path
-            img.alt = object; // Set alt text for accessibility
-            img.style.width = '100%'; // Make image fill the button width
-            img.style.height = 'auto'; // Keep image aspect ratio
-            img.style.borderRadius = '5px'; // Round the corners of the image
-
-            // Add click event to load the selected object
-            button.onclick = () => {
-                loadSelectedObject(object); // Call the function to load the selected object
-                document.getElementById('objectContainer').style.display = 'none'; // Hide the object container
-            };
-
-            // Append image to button and button to the container
-            button.appendChild(img);
-            objectButtonsContainer.appendChild(button);
-        });
-    }
-
     controls = new OrbitControls(camera, renderer.domElement);
     //controls.enableDamping = true;
     //controls.dampingFactor = 0.05;
@@ -251,6 +234,100 @@ scene.add(camera);
     const objLoader = new OBJLoader();
     const textureLoader = new THREE.TextureLoader();
 
+    // Function to load a object by name.
+    function loadSelectedObject(object_name){
+        const objExt = ".obj";
+        const mtlExt = ".mtl";
+        const basePath = "obj/"
+        // MTL Loader
+        mtlLoader.load(basePath + object_name + mtlExt, (materials) => {
+        materials.preload();
+        
+            // OBJ model laden
+            //eigen changeTexture gebruikt, deze houdt de weerspiegeling weg.
+            //objLoader.setMaterials(materials)
+            objLoader.load(basePath + object_name + objExt, function(object) {
+                object.scale.setScalar(1);
+                objModel = object;
+                
+                object.traverse(function(child) {
+                    if (child.isMesh && child.material) {
+                        child.castShadow = true;
+                        child.receiveShadow = true;
+                        
+                        // Voor 'Doek_Boven' materiaal
+                        // if (child.material.name === "wire_227153153") {
+                        //     // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
+                        //     let stofTexture = new THREE.TextureLoader().load('obj/doek1.jpg');
+                        //     child.material = new THREE.MeshStandardMaterial({
+                        //         name: "Doek_Boven",
+                        //         map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
+                        //         roughness: 0.1, // Stof is meestal niet glanzend, dus een hoge roughness waarde
+                        //         metalness: 0.9, // Stof heeft minimale tot geen metallic eigenschappen
+                        //     });
+                        // }
+
+                        // // Voor 'Doek_Onder' materiaal
+                        // else if (child.material.name === "building_02_Door__Window_blind__Nor") {
+                        //     // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
+                        //     let stofTexture = new THREE.TextureLoader().load('obj/doek1b.jpg');
+                        //     child.material = new THREE.MeshStandardMaterial({
+                        //         name: "Doek_Onder",
+                        //         map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
+                        //         roughness: 0.1, // Stof is meestal niet glanzend, dus een hoge roughness waarde
+                        //         metalness: 0.9, // Stof heeft minimale tot geen metallic eigenschappen
+                        //     });
+                        // }
+
+                        // // Voor 'Frame' materiaal
+                        if (child.material.name === "Frame") {
+                            let ijzerTexture = new THREE.TextureLoader().load('obj/metallic-textured-background.jpg');
+                            child.material = new THREE.MeshStandardMaterial({
+                                name: "Frame",
+                                map: ijzerTexture, // Textuur voor het 'ijzer'-achtige uiterlijk
+                                roughness: 0.3, // IJzer heeft een lagere roughness, wat zorgt voor wat glans
+                                metalness: 0.9, // IJzer is een metaal, dus metalness is hoog
+                            });
+                        }     
+                        // Vergeet niet needsUpdate te zetten indien nodig
+                        child.material.needsUpdate = true;
+                    }
+                });
+                changeTexture(1);
+                scene.add(objModel);
+                objModel.receiveShadow = true;
+                objModel.position.x = 0;
+                switchableObjects.push(objModel);           
+                checkAllAssetsLoaded(); // En hier weer
+            });
+        });
+    }
+
+    // Function to add object buttons for selecting object at start
+    function createSelectObjectButtons(availableObjects) {
+        const objectButtonsContainer = document.getElementById('objectButtonsContainer');
+        objectButtonsContainer.innerHTML = ''; // Clear any existing buttons
+
+        availableObjects.forEach(object => {
+            // Create a button for each object
+            const button = document.createElement('button');
+            
+            // Create an image element
+            const img = document.createElement('img');
+            img.src = `img/${object}.jpg`; // Set the source to the image path
+
+            // Add click event to load the selected object
+            button.onclick = () => {
+                loadSelectedObject(object); // Call the function to load the selected object
+                document.getElementById('objectContainer').style.display = 'none'; // Hide the object container
+            };
+
+            // Append image to button and button to the container
+            button.appendChild(img);
+            objectButtonsContainer.appendChild(button);
+        });
+    }
+
     // Maak een nieuw Image element voor de geüploade afbeelding
     const image = new Image();
     image.src = textureSrc; // Stel de data-URL in als de bron van de afbeelding
@@ -268,8 +345,8 @@ scene.add(camera);
         // Gebruik deze textuur voor je materiaal
         const material = new THREE.MeshStandardMaterial({
             map: texture,
-            roughness: 0.5, // Aanpassen voor minder weerspiegeling
-            metalness: 0.1  // Aanpassen voor minder metallic look
+            roughness: 0.0, // Aanpassen voor minder weerspiegeling
+            metalness: 0.0  // Aanpassen voor minder metallic look
 
             });
         
@@ -280,82 +357,12 @@ scene.add(camera);
         //const size = mesh.geometry.boundingBox.getSize();
         imagePlane.position.x = 0;
         imagePlane.receiveShadow = true; // Laat het afbeeldingsvlak schaduwen ontvangen
-        scene.add(imagePlane);
+        scene.add(imagePlane);  
 
         //switchableObjects.push(imagePlane);
         
         checkAllAssetsLoaded(); // Roep deze functie aan na het laden van elke asset
     };
-    
-    const objExt = ".obj";
-    const mtlExt = ".mtl";
-    const basePath = "obj/"
-
-function loadSelectedObject(object_name){
-    // MTL Loader
-    mtlLoader.load(basePath + object_name + mtlExt, (materials) => {
-    materials.preload();
-    
-        // OBJ model laden
-        objLoader.setMaterials(materials);
-        objLoader.load(basePath + object_name + objExt, function(object) {
-            object.scale.setScalar(1);
-            objModel = object;
-            
-            object.traverse(function(child) {
-                if (child.isMesh && child.material) {
-                    child.castShadow = true;
-                    child.receiveShadow = true;
-                    
-                    // Voor 'Doek_Boven' materiaal
-                    if (child.material.name === "wire_227153153") {
-                        // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
-                        let stofTexture = new THREE.TextureLoader().load('obj/doek1.jpg');
-                        child.material = new THREE.MeshStandardMaterial({
-                            name: "Doek_Boven",
-                            map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
-                            roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
-                            metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
-                        });
-                    }
-
-                    // Voor 'Doek_Onder' materiaal
-                    else if (child.material.name === "building_02_Door__Window_blind__Nor") {
-                        // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
-                        let stofTexture = new THREE.TextureLoader().load('obj/doek1b.jpg');
-                        child.material = new THREE.MeshStandardMaterial({
-                            name: "Doek_Onder",
-                            map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
-                            roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
-                            metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
-                        });
-                    }
-
-                    // Voor 'Frame' materiaal
-                    else if (child.material.name === "Frame") {
-                        let ijzerTexture = new THREE.TextureLoader().load('obj/metallic-textured-background.jpg');
-                        child.material = new THREE.MeshStandardMaterial({
-                            name: "Frame",
-                            map: ijzerTexture, // Textuur voor het 'ijzer'-achtige uiterlijk
-                            roughness: 0.3, // IJzer heeft een lagere roughness, wat zorgt voor wat glans
-                            metalness: 1.0, // IJzer is een metaal, dus metalness is hoog
-                        });
-                    }
-                    // Vergeet niet needsUpdate te zetten indien nodig
-                    child.material.needsUpdate = true;
-                }
-            });
-            
-            scene.add(objModel);
-            objModel.receiveShadow = true;
-            objModel.position.x = 0;
-            switchableObjects.push(objModel);
-            
-            
-            checkAllAssetsLoaded(); // En hier weer
-        });
-    });
-}
     
 function checkAllAssetsLoaded() {
         assetsLoaded++;
@@ -374,54 +381,9 @@ function checkAllAssetsLoaded() {
     animate();
 }
 
-function changeColor(materialColors) {
-    objModel.traverse(function(child) {
-        if (child.isMesh) {
-            let materials = Array.isArray(child.material) ? child.material : [child.material];
-            materials.forEach(material => {
-                // Zet de kleur bovenop het huidige materiaal
-                const materialColorObject = materialColors.find(m => m.name === material.name);
-                if (materialColorObject) {
-                    material.color.set(materialColorObject.color); 
-                    material.needsUpdate = true;
-                }
-            });
-        }
-    });
+export function setDoekTeller(value){
+    doekTeller = value;
 }
-export { changeColor };
-
-
-function changeTexture(materialTextures) {
-    const textureLoader = new THREE.TextureLoader();
-    
-    materialTextures.forEach(materialTexture => {
-        textureLoader.load(materialTexture.texturePath, newTexture => {
-            objModel.traverse(child => {
-                if (child.isMesh) {
-                    let materials = Array.isArray(child.material) ? child.material : [child.material];
-                    materials.forEach(material => {
-                        if (material.name === materialTexture.name) {
-                            material.color.set(0xffffff); 
-                            material.map = newTexture;
-                            
-                            // Set the texture to repeat, if not, scale the texture with object size.   
-                            let texture = material.map;      
-                            if(doekTeller != 1){
-                                texture.wrapS = THREE.RepeatWrapping;
-                                texture.wrapT = THREE.RepeatWrapping;
-                                texture.repeat.set( selectedObject.scale.x, selectedObject.scale.y );
-                            }         
-
-                            material.needsUpdate = true;
-                        }
-                    });
-                }
-            });
-        });
-    });
-}
-
 
 function scaleObject(object, bool) {
     // Scale the object based on the boolean value
@@ -438,14 +400,27 @@ function scaleObject(object, bool) {
     repeatTexture(object);
 }
 
+function scaleHorizontal(object, bool){
+    if(bool){
+        object.scale.x *= 1.01;
+    }
+    else{
+        object.scale.x *= 0.99;
+    }
+    updateBoundingBox();
+    repeatTexture(object);
+}
+
 function repeatTexture(object){
-    // Get all textures and set based on object scale
-    object.traverse(function (child) {
-        if (child.isMesh && child.material && child.material.map && doekTeller != 1) {
-            let texture = child.material.map;
-            texture.repeat.set( object.scale.x, object.scale.y );
-        }
-    });
+    if(!notRepeatTexture.includes(doekTeller)){
+        // Get all textures and set based on object scale
+        object.traverse(function (child) {
+            if (child.isMesh && child.material && child.material.map && doekTeller != 1) {
+                let texture = child.material.map;
+                texture.repeat.set( object.scale.x, object.scale.y );
+            }
+        });
+    }
 }
 
 function addLighting() {
@@ -666,38 +641,23 @@ function onDocumentKeyDown(event) {
             switchLighting("all");
             break;
         case 'w':
-            if (selectedObject) selectedObject.scale.x *= 0.99;
-            repeatTexture(selectedObject);
-            updateBoundingBox();
+            // scale down horizontal (false)
+            scaleHorizontal(selectedObject, false)
             break;
         case 'W':
-            if (selectedObject) selectedObject.scale.x *= 1.01;
-            repeatTexture(selectedObject);
-            updateBoundingBox();
+            // scale up horizontal (true)
+            scaleHorizontal(selectedObject, true)
             break;
         case 'k':
             kleurTeller++; // Verhoog de teller met 1
-            if (kleurTeller > 4) kleurTeller = 0;
+            if (kleurTeller > kleurArray.length) kleurTeller = 0;
             newColor = kleurArray[kleurTeller];
-            changeColorSpecificMaterials([
-                { name: 'Doek_Boven', color: newColor }, 
-                { name: 'Doek_Onder', color: newColor }  
-            ]);            
+            changeTexture(doekTeller, newColor);
             break;
         case 't':
             doekTeller++; // Verhoog de teller met 1
-            if (doekTeller > 5) doekTeller = 1;
-                if (doekTeller == 1) {
-                    changeTexture([
-                        { name: 'Doek_Boven', texturePath: 'obj/doek' + doekTeller + '.jpg' },
-                        { name: 'Doek_Onder', texturePath: 'obj/doek' + doekTeller + 'b.jpg' }
-                    ]);
-                } else {
-                    changeTexture([
-                        { name: 'Doek_Boven', texturePath: 'obj/doek' + doekTeller + '.jpg' },
-                        { name: 'Doek_Onder', texturePath: 'obj/doek' + doekTeller + '.jpg' }
-                    ]);
-                }
+            if (doekTeller > 6) doekTeller = 1;
+            changeTexture(doekTeller, objModel);
             break;
         case 'r':
             // Roteer 1 graad naar rechts

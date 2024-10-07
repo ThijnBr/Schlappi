@@ -94,6 +94,134 @@ body {
     }
 }
 
+#materialContainer {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 20px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    width: 280px;
+    transition: all 0.3s ease;
+}
+
+#materialTitle {
+    font-size: 24px;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+
+.materialContainer {
+    position: relative;
+    display: inline-block;
+    margin: 5px;
+}
+
+#materialContainer button {
+    width: 60px;
+    height: 60px;
+    border: none;
+    border-radius: 10px;
+    background-color: #f0f0f0;
+    transition: all 0.2s ease;
+    cursor: pointer;
+    overflow: hidden;
+    padding: 0;
+    position: relative;
+}
+
+#materialContainer button:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+#materialContainer button img {
+    width: 250%;
+    height: 250%;
+    object-fit: cover;
+    display: block;
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -70%);
+    transition: all 0.3s ease;
+}
+
+#materialContainer button:hover img {
+    width: 275%;
+    height: 275%;
+}
+
+.materialDropdown {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: white;
+    border-radius: 5px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    padding: 10px;
+    display: none;
+    z-index: 10;
+    width: auto;
+    white-space: nowrap;
+}
+
+.materialBox{
+    width: 50px;
+    height: 50px;
+    margin: 5px;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.materialBox:hover {
+    transform: scale(1.1);
+}
+
+.materialBox canvas {
+    width: 50px;
+    height: 50px;
+    border-radius: 25%;
+}
+
+.button-container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* Add this to show the dropdown on hover */
+.materialContainer:hover .materialDropdown {
+    display: block;
+}
+
+/* Media query for smaller screens */
+@media (max-width: 480px) {
+    .colorDropdown {
+        left: 0;
+        transform: none;
+        width: 100%;
+        white-space: normal;
+    }
+
+    .colorBox {
+        width: 30px;
+        height: 30px;
+    }
+}
+
 #objectContainer {
     display: none;
     position: fixed;
@@ -172,45 +300,6 @@ body {
         margin: 0 10px;
     }
 }
-
-
-/* Container for color title and color boxes */
-#colorContainer {
-    display: none;
-    position: fixed;
-    bottom: 20px;
-    left: 20px;
-    background-color: rgba(255, 255, 255, 0.9);
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.1);
-    font-family: Arial, sans-serif;
-    width: 150px;
-}
-
-/* Title styling */
-#colorTitle {
-    font-size: 18px;
-    font-weight: bold;
-    margin-bottom: 10px;
-    text-align: center;
-}
-
-/* Flex container for color boxes */
-.colorRow {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-}
-
-/* Each individual color box */
-.colorBox {
-    width: 50px;
-    height: 50px;
-    margin: 0 5px; /* Added horizontal margin */
-    border: 2px solid #000; /* Add border for better visibility */
-}
-
 .wrapper {
     display: flex;
     flex-direction: row;
