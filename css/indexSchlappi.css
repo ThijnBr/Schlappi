@@ -108,6 +108,20 @@ body {
     transition: all 0.3s ease;
 }
 
+#bakContainer {
+    display: none;
+    position: fixed;
+    top: 20px;
+    left: 350px;
+    background-color: rgba(255, 255, 255, 0.95);
+    border-radius: 15px;
+    padding: 20px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+    font-family: 'Arial', sans-serif;
+    width: 280px;
+    transition: all 0.3s ease;
+}
+
 #materialTitle {
     font-size: 24px;
     font-weight: bold;
@@ -118,13 +132,13 @@ body {
     letter-spacing: 1px;
 }
 
-.materialContainer {
+.materialContainer, .bakContainer {
     position: relative;
     display: inline-block;
     margin: 5px;
 }
 
-#materialContainer button {
+#materialContainer button, .bakContainer button {
     width: 60px;
     height: 60px;
     border: none;
@@ -137,12 +151,12 @@ body {
     position: relative;
 }
 
-#materialContainer button:hover {
+#materialContainer button:hover, .bakContainer button:hover {
     transform: scale(1.05);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
 
-#materialContainer button img {
+#materialContainer button img, .bakContainer button img {
     width: 250%;
     height: 250%;
     object-fit: cover;
@@ -154,7 +168,7 @@ body {
     transition: all 0.3s ease;
 }
 
-#materialContainer button:hover img {
+#materialContainer button:hover img, .bakContainer button:hover img {
     width: 275%;
     height: 275%;
 }
@@ -170,24 +184,30 @@ body {
     padding: 10px;
     display: none;
     z-index: 10;
+    max-width: calc(100vw - 40px); /* Prevent it from exceeding the viewport width */
     width: auto;
-    white-space: nowrap;
+    white-space: normal; /* Allow text to wrap normally */
+    overflow: hidden; /* Hide overflow */
+    display: grid; /* Use grid layout */
+    grid-template-columns: repeat(2, 1fr); /* Create two equal columns */
+    gap: 10px; /* Add spacing between items */
 }
 
-.materialBox{
-    width: 50px;
-    height: 50px;
-    margin: 5px;
-    border-radius: 50%;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-    display: inline-block;
-    vertical-align: middle;
+/* Style for each option in the dropdown */
+.materialBox {
+    background-color: #f9f9f9; /* Option background color */
+    border-radius: 3px; /* Rounded corners */
+    padding: 5px; /* Padding around options */
+    cursor: pointer; /* Pointer cursor on hover */
+    text-align: center; /* Center the text */
+    transition: background-color 0.3s; /* Smooth transition for hover effect */
 }
 
+/* Hover effect for options */
 .materialBox:hover {
-    transform: scale(1.1);
+    background-color: #e0e0e0; /* Change background on hover */
 }
+
 
 .materialBox canvas {
     width: 50px;
