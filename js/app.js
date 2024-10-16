@@ -18,6 +18,8 @@ document.getElementById('uploadButton').addEventListener('click', function() {
         document.getElementById('objectContainer').style.display = 'block';
         document.getElementById('materialContainer').style.display = 'block';
         document.getElementById('bakContainer').style.display = 'block';
+        document.getElementById('topBanner').style.display = 'block';
+        document.getElementById('buttonContainer').style.display = 'block';
 
         // Start de Three.js scene met de afbeelding als argument
         init(event.target.result);
@@ -598,6 +600,90 @@ document.getElementById('zoomReset').addEventListener('click', function() {
 
 // Initialiseer het zoompercentage wanneer de pagina laadt
 updateZoomPercent();
+
+// buttonFunctions
+// Function to increase size
+function increaseSize() {
+    if (selectedObject) {
+        scaleObject(selectedObject, true); // Assuming scaleObject is defined elsewhere
+    }
+}
+
+// Function to decrease size
+function decreaseSize() {
+    if (selectedObject) {
+        scaleObject(selectedObject, false); // Assuming scaleObject is defined elsewhere
+    }
+}
+
+// Function to increase horizontal size
+function increaseHorizontalSize() {
+    if (selectedObject) {
+        scaleHorizontal(selectedObject, true); // Assuming scaleHorizontal is defined elsewhere
+    }
+}
+
+// Function to decrease horizontal size
+function decreaseHorizontalSize() {
+    if (selectedObject) {
+        scaleHorizontal(selectedObject, false); // Assuming scaleHorizontal is defined elsewhere
+    }
+}
+
+// Function to copy the selected object
+function copyObject() {
+    if (selectedObject) {
+        clipboardObject = selectedObject.clone();
+        console.log('Object copied to clipboard.');
+    }
+}
+
+// Function to paste the copied object
+function pasteObject() {
+    if (clipboardObject) {
+        const objectClone = clipboardObject.clone();
+        scene.add(objectClone);
+        objectClone.position.x += 1; // Adjust position slightly
+        
+        // Add the cloned object to switchableObjects and make it the selected object
+        switchableObjects.push(objectClone);
+        selectedObject = objectClone;
+        updateBoundingBox(); // Update the bounding box
+        currentIndex = switchableObjects.length - 1; // Update current index to the newly added object
+        console.log('Object pasted from clipboard.');
+    }
+}
+let intervalId = null;
+// Event listeners for the buttons
+// Function to handle holding down a button for continuous execution
+function startContinuousExecution(action) {
+    if (intervalId) return; // Prevent multiple intervals
+
+    action(); // Call the action immediately
+    intervalId = setInterval(action, 100); // Repeat action every 100 ms
+}
+
+// Function to stop the continuous execution
+function stopContinuousExecution() {
+    clearInterval(intervalId);
+    intervalId = null;
+}
+
+// Event listeners for the buttons
+document.getElementById('increaseSizeButton').addEventListener('mousedown', () => startContinuousExecution(increaseSize));
+document.getElementById('decreaseSizeButton').addEventListener('mousedown', () => startContinuousExecution(decreaseSize));
+document.getElementById('increaseHorizontalSizeButton').addEventListener('mousedown', () => startContinuousExecution(increaseHorizontalSize));
+document.getElementById('decreaseHorizontalSizeButton').addEventListener('mousedown', () => startContinuousExecution(decreaseHorizontalSize));
+
+document.getElementById('copyButton').addEventListener('click', copyObject);
+document.getElementById('pasteButton').addEventListener('click', pasteObject);
+
+// Stop continuous execution on mouseup or mouseleave
+document.querySelectorAll('.icon-button').forEach(button => {
+    button.addEventListener('mouseup', stopContinuousExecution);
+    button.addEventListener('mouseleave', stopContinuousExecution);
+});
+
 
 
 function onDocumentKeyDown(event) {

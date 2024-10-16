@@ -33,9 +33,6 @@
 
         </div>
     <div id="info" style="display:none;">
-        <pre>
-Kies uw stijl!
-</pre>
     </div>
     <div id="zoomControls" style="position: fixed; top: 10px; right: 10px; background: white; padding: 10px; display:none;">
         <button id="zoomIn">Inzoomen</button>
@@ -47,11 +44,37 @@ Kies uw stijl!
         <!-- Three.js canvas zal hier worden toegevoegd door de init functie -->
     </div>
 
-    <!-- Chat box with image -->
-    <div id="chatBoxContainer">
-        <img src="img/teacher.jpg" alt="Avatar" id="chatImage">
-        <div id="chatBox">Hello! Welcome to our app.</div>
-        <div id="nextArrow">→</div>
+    <div id="topBanner">
+        <div class="banner-logo">
+            <img src="img/logo-schlappi.svg" alt="Schlappi Logo">
+        </div>
+    </div>
+
+    <div id="buttonContainer">
+        <button id="increaseSizeButton" class="icon-button">
+            <img src="img/increase_size.png" alt="Increase Size">
+            <span>Vergroot markies</span>
+        </button>
+        <button id="decreaseSizeButton" class="icon-button">
+            <img src="img/decrease_size.png" alt="Decrease Size">
+            <span>Verklein markies</span>
+        </button>
+        <button id="increaseHorizontalSizeButton" class="icon-button">
+            <img src="img/increase_horizontal.png" alt="Increase Horizontal Size">
+            <span>Vergroot breedte</span>
+        </button>
+        <button id="decreaseHorizontalSizeButton" class="icon-button">
+            <img src="img/decrease_horizontal.png" alt="Decrease Horizontal Size">
+            <span>Verklein breedte</span>
+        </button>
+        <button id="copyButton" class="icon-button">
+            <img src="img/copy.png" alt="Copy">
+            <span>Kopieer markies</span>
+        </button>
+        <button id="pasteButton" class="icon-button">
+            <img src="img/paste.png" alt="Paste">
+            <span>Plak markies</span>
+        </button>
     </div>
 
     <div id="materialContainer">
@@ -79,6 +102,5 @@ Kies uw stijl!
     </script>
     
     <script src="js/app.js" type="module"></script>
-    <script src="js/secondary_functions/chatbox.js" type="module"></script>
 </body>
 </html>
