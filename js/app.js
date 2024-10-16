@@ -38,7 +38,7 @@ import { createMaterialButtons } from './secondary_functions/materialAndBakButto
 import { changeTexture } from './secondary_functions/changeTexture.js';
 
 let scene, camera, renderer, controls;
-let availableObjects  = ["model5"];
+let availableObjects  = ["model5", "model1"];
 let selectedObject = null;
 let objModel, imagePlane; // Correct gebruik van globale variabelen
 export {objModel};
@@ -92,12 +92,12 @@ scene.add(camera);
 
     // Toon de assen als hulplijnen
     const axesHelper = new THREE.AxesHelper(5); // De parameter specificeert de lengte van de assen
-    scene.add(axesHelper); // Voeg x, y en z as zichtbaar toe
+    //scene.add(axesHelper); // Voeg x, y en z as zichtbaar toe
     
     // Hier initialiseer je de scene, camera, en renderer
     renderer = new THREE.WebGLRenderer({ alpha: false, preserveDrawingBuffer: true });
     renderer.shadowMap.enabled = true;
-    renderer.setClearColor(0x000000, 1);
+    renderer.setClearColor(0xADD8E6, 1);
     renderer.setSize(window.innerWidth, window.innerHeight);
 
     // GammaCorrectie instellen
@@ -131,56 +131,58 @@ scene.add(camera);
     function onMouseDown(event) {
         event.preventDefault();
         
+        // Calculate mouse position in normalized device coordinates
         mouse.x = ((event.clientX - renderer.domElement.offsetLeft) / renderer.domElement.clientWidth) * 2 - 1;
         mouse.y = -((event.clientY - renderer.domElement.offsetTop) / renderer.domElement.clientHeight) * 2 + 1;
-        
+    
+        // Cast a ray from the camera through the mouse position
         raycaster.setFromCamera(mouse, camera);
-        let intersects = raycaster.intersectObjects(scene.children, true);
-        
+    
+        // Raycast only on switchable objects for better performance and precision
+        let intersects = raycaster.intersectObjects(switchableObjects, true);
+    
         if (intersects.length > 0) {
             let target = intersects[0].object;
-            
-            // Reset selectedObject elke keer als de muis wordt ingedrukt
-            selectedObject = null;
-            
+    
+            // Ensure we select the parent object if necessary
             while (target.parent) {
-                target = target.parent;
                 if (switchableObjects.includes(target)) {
                     selectedObject = target;
-                    break; // Stop de lus als het juiste object is gevonden
+                    break; 
                 }
+                target = target.parent;
             }
-            
+    
             if (selectedObject) {
+                // If clicked the same object, just return to avoid reselecting
+                if (isDragging) return;
+    
+                // Disable controls and start dragging
                 controls.enabled = false;
                 isDragging = true;
-                
+    
+                // Set up a plane to drag the object on
                 dragPlane.setFromNormalAndCoplanarPoint(
                     camera.getWorldDirection(dragPlane.normal),
                     selectedObject.position
                 );
-                
+    
+                // Calculate drag offset to ensure smooth movement
                 if (raycaster.ray.intersectPlane(dragPlane, dragOffset)) {
                     dragOffset.sub(selectedObject.position);
                 }
-                
-                // Update de bounding box hier indien nodig
+    
+                // Update the bounding box if needed
                 updateBoundingBox();
-            } else {
-                // Als de klik niet op een switchableObjects is, deselecteer dan
-                controls.enabled = true;
-                selectedObject = null;
-                // Verwijder de bounding box hier indien nodig
-                removeBoundingBox();
             }
         } else {
-            // Geen intersecties, dus zet de controls aan en deselecteer het object
-            controls.enabled = true;
+            // If no object is clicked, reset selectedObject and re-enable controls
             selectedObject = null;
-            // Verwijder de bounding box hier indien nodig
+            controls.enabled = true;
             removeBoundingBox();
         }
     }
+    
     
     function onMouseMove(event) {
         if (!isDragging || !selectedObject) return;
@@ -203,7 +205,7 @@ scene.add(camera);
     function onMouseUp() {
         if (isDragging) {
             isDragging = false;
-            controls.enabled = true; // Heractiveer OrbitControls
+            controls.enabled = true;
         }
     }
 
@@ -353,7 +355,7 @@ scene.add(camera);
         imagePlane.geometry.computeBoundingSphere();
         //const size = mesh.geometry.boundingBox.getSize();
         imagePlane.position.x = 0;
-        imagePlane.receiveShadow = true; // Laat het afbeeldingsvlak schaduwen ontvangen
+        imagePlane.receiveShadow = false; // Laat het afbeeldingsvlak schaduwen ontvangen
         scene.add(imagePlane);  
 
         //switchableObjects.push(imagePlane);
@@ -450,7 +452,7 @@ function addLighting() {
     
     // Toon waar het licht vandaan komt
     const shadowCameraHelper = new THREE.CameraHelper(directionalLight.shadow.camera);
-    scene.add(shadowCameraHelper);
+    //scene.add(shadowCameraHelper);
     
     // Meer lichtbronnen hier toevoegen volgens behoefte
     // Bijvoorbeeld PointLight, SpotLight, etc.
