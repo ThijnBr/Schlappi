@@ -1,29 +1,45 @@
 import * as THREE from 'three';
-import { objModel } from "../app.js";
 
 // Function to change texture of an object
-export function changeTexture(materialName, texturePath) {
+export function changeTexture(selectedObject, materialName, texturePath) {
     // Load the new texture
     const newTexture = new THREE.TextureLoader().load(texturePath, (texture) => {
         // Ensure the texture wraps and repeats
         texture.wrapS = texture.wrapT = THREE.RepeatWrapping;  // Enable repeating
-        texture.repeat.set(0.1, 0.1);
+        texture.repeat.set(5 * selectedObject.scale.x, 5 * selectedObject.scale.y);
 
         // Calculate average color
         const averageColor = getAverageColor(texture);
         
         // Apply the texture to the material and set the PVC color
-        objModel.traverse((child) => {
+        selectedObject.traverse((child) => {
             if (child.isMesh && child.material.name === materialName) {
-                child.material.map = texture;
-                child.material.needsUpdate = true;
+                // Create a copy of the existing material
+                const originalMaterial = child.material;
+                const newMaterial = originalMaterial.clone(); // Clone the original material
+
+                // Update the texture on the new material
+                newMaterial.map = texture;
+                newMaterial.needsUpdate = true; // Mark the new material for update
+                
+                // Assign the new material to the mesh
+                child.material = newMaterial; // Set the cloned material as the current material
             }
-            if (child.isMesh && child.material.name === "pvc" && materialName == "Doek") {
-                child.material.color.set(averageColor);  // Set PVC color to average color
+            
+            // Copy the PVC material and set the color
+            if (child.isMesh && child.material.name === "PVC" && materialName === "Doek") {
+                const originalPVCMaterial = child.material; 
+                const newPVCMaterial = originalPVCMaterial.clone(); // Clone the PVC material
+                
+                newPVCMaterial.color.set(averageColor);  // Set the PVC color to average color
+                newPVCMaterial.needsUpdate = true; // Ensure the new PVC material is marked for update
+                
+                child.material = newPVCMaterial; // Assign the cloned and updated PVC material
             }
         });
     });
 }
+
 
 // Function to calculate the average color from the texture
 function getAverageColor(texture) {

@@ -42,8 +42,8 @@ import { changeTexture } from './secondary_functions/changeTexture.js';
 let scene, camera, renderer, controls;
 let availableObjects  = ["model5", "model1"];
 let selectedObject = null;
+export {selectedObject};
 let objModel, imagePlane; // Correct gebruik van globale variabelen
-export {objModel};
 let boxHelper;
 let clipboardObject = null; // Voor het tijdelijk opslaan van het gekopieerde object
 let switchableObjects = []; // Lijst van objecten waartussen geschakeld kan worden
@@ -280,10 +280,10 @@ scene.add(camera);
                         }
 
                         // Voor 'Frame' materiaal
-                        if (child.material.name === "pvc") {
+                        if (child.material.name === "PVC") {
                             let ijzerTexture = new THREE.TextureLoader().load('obj/metallic-textured-background.jpg');
                             child.material = new THREE.MeshStandardMaterial({
-                                name: "pvc",
+                                name: "PVC",
                                 map: ijzerTexture, // Textuur voor het 'ijzer'-achtige uiterlijk
                                 roughness: 0.9, // IJzer heeft een lagere roughness, wat zorgt voor wat glans
                                 metalness: 0.1, // IJzer is een metaal, dus metalness is hoog
@@ -293,8 +293,8 @@ scene.add(camera);
                         child.material.needsUpdate = true;
                     }
                 });
-                changeTexture("Doek", "obj/textures/doeken/doek1.png");
-                changeTexture("Bak", "obj/textures/bak/bak1.png");
+                changeTexture(objModel, "Bak", "obj/textures/bak/bak1.png");
+                changeTexture(objModel, "Doek", "obj/textures/doeken/doek2.png");
                 scene.add(objModel);
                 objModel.receiveShadow = true;
                 objModel.position.x = 0;
@@ -417,17 +417,27 @@ function scaleHorizontal(object, bool) {
 }
 
 function repeatTexture(object) {
-    // Get all textures and set based on object scale
     object.traverse(function (child) {
         if (child.isMesh && child.material && child.material.map) {
             let texture = child.material.map;
-            texture.needsUpdate = true; // Ensure the texture is updated
 
-            // Adjust the repeat factor if needed (0.1 can be modified as required)
-            texture.repeat.set(0.1 * object.scale.x, 0.1 * object.scale.y);
+            // Check if the texture is already cloned for the current material
+            if (!texture.isCloned) {
+                texture = texture.clone(); // Clone the texture
+                texture.isCloned = true;   // Mark the cloned texture
+                child.material.map = texture; // Assign the cloned texture to the material
+            }
+
+            texture.needsUpdate = true;
+
+            // Adjust the repeat factor based on the object's scale
+            texture.repeat.set(5 * object.scale.x, 5 * object.scale.y);
         }
     });
 }
+
+
+
 
 function addLighting() {
     // Ambient Light toevoegen

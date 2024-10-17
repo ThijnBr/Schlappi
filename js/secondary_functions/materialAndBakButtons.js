@@ -1,3 +1,4 @@
+import { selectedObject } from "../app.js";
 import { changeTexture } from "./changeTexture.js";
 
 // Functie om knoppen te maken voor elk materiaal en kleurvariatie dropdown toe te voegen
@@ -44,10 +45,10 @@ function createMaterialButton(index, imagePath, container, doek) {
     // Eventlistener voor textuurverandering
     button.addEventListener('click', () => {
         if (doek){
-            changeTexture("Doek", optionPath); 
+            changeTexture(selectedObject, "Doek", optionPath); 
         }
         else{
-            changeTexture("Bak", optionPath)
+            changeTexture(selectedObject, "Bak", optionPath)
         }
     });
 
@@ -96,7 +97,7 @@ function createMaterialDropdown(doekIndex, options, imagePath, container) {
 
         // Eventlistener om textuur of kleur te veranderen bij klikken
         optionDiv.addEventListener('click', () => {
-            changeTexture('Doek', optionPath); // Pas de geselecteerde textuurvariatie toe
+            changeTexture(selectedObject, 'Doek', optionPath); // Pas de geselecteerde textuurvariatie toe
         });
 
         dropdown.appendChild(optionDiv);
