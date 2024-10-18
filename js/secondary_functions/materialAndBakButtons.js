@@ -10,6 +10,8 @@ export function createMaterialButtons() {
     let bakPath = 'obj/textures/bak/';
     // Maak materiaal knop. false voor bak, true voor doek
     createMaterialButton(1, bakPath, bakButtonsContainer, false);
+    createMaterialButton(2, bakPath, bakButtonsContainer, false);
+    createMaterialButton(3, bakPath, bakButtonsContainer, false);
 
     // Maak doekvariaties aan in een dropdown
     // doekIndex, array met andere doeken variaties, container van het document, type textuur

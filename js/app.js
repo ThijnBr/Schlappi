@@ -38,6 +38,7 @@ import { DragControls } from 'three/addons/controls/DragControls.js';
 //import of secondary functions
 import { createMaterialButtons } from './secondary_functions/materialAndBakButtons.js';
 import { changeTexture } from './secondary_functions/changeTexture.js';
+import { createSelectObjectButtons } from './secondary_functions/selectObjectButtons.js';
 
 let scene, camera, renderer, controls;
 let availableObjects  = ["model5", "model1"];
@@ -212,14 +213,14 @@ scene.add(camera);
     }
 
     controls = new OrbitControls(camera, renderer.domElement);
-    //controls.enableDamping = true;
-    //controls.dampingFactor = 0.05;
+    // controls.enableDamping = true;
+    // controls.dampingFactor = 0.05;
 
-    //const PCDloader = new PCDLoader();
-    //PCDloader.load('pcd/frame_00186.pcd', function (points) {
+    // const PCDloader = new PCDLoader();
+    // PCDloader.load('pcd/frame_00186.pcd', function (points) {
     //    scene.add(points);
     //    render();
-    //});
+    // });
     
     
     // Zorg ervoor dat je deze functieaanroep toevoegt binnen je init() functie
@@ -227,108 +228,7 @@ scene.add(camera);
     
     // Hier voeg je de belichting toe
     addLighting();
-
-    // Hier definiëren we assetsLoaded binnen de scope van init, om te zorgen voor juiste toegankelijkheid
-    let assetsLoaded = 0; // Zorg ervoor dat deze variabele toegankelijk is binnen de scope van init
     
-    const mtlLoader = new MTLLoader();
-    const objLoader = new OBJLoader();
-    const textureLoader = new THREE.TextureLoader();
-
-    // Function to load a object by name.
-    function loadSelectedObject(object_name){
-        const objExt = ".obj";
-        const mtlExt = ".mtl";
-        const basePath = "obj/"
-        // MTL Loader
-        mtlLoader.load(basePath + object_name + mtlExt, (materials) => {
-        
-            // OBJ model laden
-            //eigen changeTexture gebruikt, deze houdt de weerspiegeling weg.
-            objLoader.setMaterials(materials)
-            objLoader.load(basePath + object_name + objExt, function(object) {
-                object.scale.setScalar(1);
-                objModel = object;
-                
-                object.traverse(function(child) {
-                    if (child.isMesh && child.material) {
-                        child.castShadow = true;
-                        child.receiveShadow = true;
-                        
-                        //Voor 'Doek' materiaal
-                        if (child.material.name === "Doek") {
-                            // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
-                            let stofTexture = new THREE.TextureLoader().load('obj/textures/doeken/doek1.png');
-                            child.material = new THREE.MeshStandardMaterial({
-                                name: "Doek",
-                                map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
-                                roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
-                                metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
-                            });
-                        }
-
-                        // Voor 'Bak' materiaal
-                        else if (child.material.name === "Bak") {
-                            // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
-                            let stofTexture = new THREE.TextureLoader().load('obj/textures/bak/bak1.png');
-                            child.material = new THREE.MeshStandardMaterial({
-                                name: "Bak",
-                                map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
-                                roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
-                                metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
-                            });
-                        }
-
-                        // Voor 'Frame' materiaal
-                        if (child.material.name === "PVC") {
-                            let ijzerTexture = new THREE.TextureLoader().load('obj/metallic-textured-background.jpg');
-                            child.material = new THREE.MeshStandardMaterial({
-                                name: "PVC",
-                                map: ijzerTexture, // Textuur voor het 'ijzer'-achtige uiterlijk
-                                roughness: 0.9, // IJzer heeft een lagere roughness, wat zorgt voor wat glans
-                                metalness: 0.1, // IJzer is een metaal, dus metalness is hoog
-                            });
-                        }     
-                        // Vergeet niet needsUpdate te zetten indien nodig
-                        child.material.needsUpdate = true;
-                    }
-                });
-                changeTexture(objModel, "Bak", "obj/textures/bak/bak1.png");
-                changeTexture(objModel, "Doek", "obj/textures/doeken/doek2.png");
-                scene.add(objModel);
-                objModel.receiveShadow = true;
-                objModel.position.x = 0;
-                switchableObjects.push(objModel);           
-                checkAllAssetsLoaded(); // En hier weer
-            });
-        });
-    }
-
-    // Function to add object buttons for selecting object at start
-    function createSelectObjectButtons(availableObjects) {
-        const objectButtonsContainer = document.getElementById('objectButtonsContainer');
-        objectButtonsContainer.innerHTML = ''; // Clear any existing buttons
-
-        availableObjects.forEach(object => {
-            // Create a button for each object
-            const button = document.createElement('button');
-            
-            // Create an image element
-            const img = document.createElement('img');
-            img.src = `img/${object}.jpg`; // Set the source to the image path
-
-            // Add click event to load the selected object
-            button.onclick = () => {
-                loadSelectedObject(object); // Call the function to load the selected object
-                document.getElementById('objectContainer').style.display = 'none'; // Hide the object container
-            };
-
-            // Append image to button and button to the container
-            button.appendChild(img);
-            objectButtonsContainer.appendChild(button);
-        });
-    }
-
     // Maak een nieuw Image element voor de geüploade afbeelding
     const image = new Image();
     image.src = textureSrc; // Stel de data-URL in als de bron van de afbeelding
@@ -357,87 +257,90 @@ scene.add(camera);
         imagePlane.geometry.computeBoundingSphere();
         //const size = mesh.geometry.boundingBox.getSize();
         imagePlane.position.x = 0;
-        imagePlane.receiveShadow = false; // Laat het afbeeldingsvlak schaduwen ontvangen
+        imagePlane.receiveShadow = true; // Laat het afbeeldingsvlak schaduwen ontvangen
         scene.add(imagePlane);  
 
         //switchableObjects.push(imagePlane);
-        
-        checkAllAssetsLoaded(); // Roep deze functie aan na het laden van elke asset
     };
-    
-function checkAllAssetsLoaded() {
-        assetsLoaded++;
-        if (assetsLoaded === 2) {
-            // Wanneer beide assets geladen zijn, kunnen we selectedObject instellen
-            selectedObject = switchableObjects[0]; // Begin met de imagePlane geselecteerd
-            updateBoundingBox();
-        }
-    }
-    
+
     document.getElementById('canvasContainer').style.display = 'block';
     document.getElementById('canvasContainer').appendChild(renderer.domElement);
     window.addEventListener('resize', onWindowResize, false);
     document.addEventListener('keydown', onDocumentKeyDown, false);
-    
+
     animate();
 }
 
-export function setDoekTeller(value){
-    doekTeller = value;
-}
+// Function to load a object by name.
+export function loadSelectedObject(object_name){
+    const objExt = ".obj";
+    const mtlExt = ".mtl";
+    const basePath = "obj/"
 
-function scaleObject(object, bool) {
-    // Scale the object based on the boolean value
-    if (bool === true) {
-        object.scale.x *= 1.01;
-        object.scale.y *= 1.01;
-        object.scale.z *= 1.01;
-    } else {
-        object.scale.x *= 0.99;
-        object.scale.y *= 0.99;
-        object.scale.z *= 0.99;
-    }
-    updateBoundingBox();
-    repeatTexture(object);
-}
+    const mtlLoader = new MTLLoader();
+    const objLoader = new OBJLoader();
+    // MTL Loader
+    mtlLoader.load(basePath + object_name + mtlExt, (materials) => {
+    
+        // OBJ model laden
+        //eigen changeTexture gebruikt, deze houdt de weerspiegeling weg.
+        objLoader.setMaterials(materials)
+        objLoader.load(basePath + object_name + objExt, function(object) {
+            object.scale.setScalar(1);
+            objModel = object;
+            
+            object.traverse(function(child) {
+                if (child.isMesh && child.material) {
+                    child.castShadow = true;
+                    child.receiveShadow = true;
+                    
+                    //Voor 'Doek' materiaal
+                    if (child.material.name === "Doek") {
+                        // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
+                        let stofTexture = new THREE.TextureLoader().load('obj/textures/doeken/doek1.png');
+                        child.material = new THREE.MeshStandardMaterial({
+                            name: "Doek",
+                            map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
+                            roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
+                            metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
+                        });
+                    }
 
-function scaleHorizontal(object, bool) {
-    // Scale the object horizontally based on the boolean flag
-    if (bool) {
-        object.scale.x *= 1.01;  // Increase scale
-    } else {
-        object.scale.x *= 0.99;  // Decrease scale
-    }
+                    // Voor 'Bak' materiaal
+                    else if (child.material.name === "Bak") {
+                        // Gebruik MeshStandardMaterial voor een realistischer uiterlijk
+                        let stofTexture = new THREE.TextureLoader().load('obj/textures/bak/bak1.png');
+                        child.material = new THREE.MeshStandardMaterial({
+                            name: "Bak",
+                            map: stofTexture, // Textuur voor het 'stof'-achtige uiterlijk
+                            roughness: 0.9, // Stof is meestal niet glanzend, dus een hoge roughness waarde
+                            metalness: 0.1, // Stof heeft minimale tot geen metallic eigenschappen
+                        });
+                    }
 
-    // Update the object's bounding box after scaling
-    updateBoundingBox();
-
-    // Update the texture repeat based on the new scale
-    repeatTexture(object);
-}
-
-function repeatTexture(object) {
-    object.traverse(function (child) {
-        if (child.isMesh && child.material && child.material.map) {
-            let texture = child.material.map;
-
-            // Check if the texture is already cloned for the current material
-            if (!texture.isCloned) {
-                texture = texture.clone(); // Clone the texture
-                texture.isCloned = true;   // Mark the cloned texture
-                child.material.map = texture; // Assign the cloned texture to the material
-            }
-
-            texture.needsUpdate = true;
-
-            // Adjust the repeat factor based on the object's scale
-            texture.repeat.set(5 * object.scale.x, 5 * object.scale.y);
-        }
+                    // Voor 'Frame' materiaal
+                    if (child.material.name === "PVC") {
+                        let ijzerTexture = new THREE.TextureLoader().load('obj/metallic-textured-background.jpg');
+                        child.material = new THREE.MeshStandardMaterial({
+                            name: "PVC",
+                            map: ijzerTexture, // Textuur voor het 'ijzer'-achtige uiterlijk
+                            roughness: 0.9, // IJzer heeft een lagere roughness, wat zorgt voor wat glans
+                            metalness: 0.1, // IJzer is een metaal, dus metalness is hoog
+                        });
+                    }     
+                    // Vergeet niet needsUpdate te zetten indien nodig
+                    child.material.needsUpdate = true;
+                }
+            });
+            changeTexture(objModel, "Bak", "obj/textures/bak/bak1.png");
+            changeTexture(objModel, "Doek", "obj/textures/doeken/doek2.png");
+            scene.add(objModel);
+            objModel.receiveShadow = true;
+            objModel.position.x = 0;
+            switchableObjects.push(objModel);           
+        });
     });
 }
-
-
-
 
 function addLighting() {
     // Ambient Light toevoegen
@@ -529,6 +432,30 @@ function exportSceneAsImage() {
     }
 }
 
+// Function to copy the selected object. exported to buttonFunctions.js
+export function copyObject() {
+    if (selectedObject) {
+        clipboardObject = selectedObject.clone();
+        console.log('Object copied to clipboard.');
+    }
+}
+
+// Function to paste the copied object
+export function pasteObject() {
+    if (clipboardObject) {
+        const objectClone = clipboardObject.clone();
+        scene.add(objectClone);
+        objectClone.position.x += 1; // Adjust position slightly
+        
+        // Add the cloned object to switchableObjects and make it the selected object
+        switchableObjects.push(objectClone);
+        selectedObject = objectClone;
+        updateBoundingBox(); // Update the bounding box
+        currentIndex = switchableObjects.length - 1; // Update current index to the newly added object
+        console.log('Object pasted from clipboard.');
+    }
+}
+
 function updateBoundingBox() {
     // Verwijder de oude BoxHelper als deze bestaat
     if (boxHelper) {
@@ -543,6 +470,7 @@ function updateBoundingBox() {
         scene.add(boxHelper);
     }
 }
+export {updateBoundingBox};
 
 function removeBoundingBox() {
     if (boxHelper) {
@@ -610,91 +538,6 @@ document.getElementById('zoomReset').addEventListener('click', function() {
 
 // Initialiseer het zoompercentage wanneer de pagina laadt
 updateZoomPercent();
-
-// buttonFunctions
-// Function to increase size
-function increaseSize() {
-    if (selectedObject) {
-        scaleObject(selectedObject, true); // Assuming scaleObject is defined elsewhere
-    }
-}
-
-// Function to decrease size
-function decreaseSize() {
-    if (selectedObject) {
-        scaleObject(selectedObject, false); // Assuming scaleObject is defined elsewhere
-    }
-}
-
-// Function to increase horizontal size
-function increaseHorizontalSize() {
-    if (selectedObject) {
-        scaleHorizontal(selectedObject, true); // Assuming scaleHorizontal is defined elsewhere
-    }
-}
-
-// Function to decrease horizontal size
-function decreaseHorizontalSize() {
-    if (selectedObject) {
-        scaleHorizontal(selectedObject, false); // Assuming scaleHorizontal is defined elsewhere
-    }
-}
-
-// Function to copy the selected object
-function copyObject() {
-    if (selectedObject) {
-        clipboardObject = selectedObject.clone();
-        console.log('Object copied to clipboard.');
-    }
-}
-
-// Function to paste the copied object
-function pasteObject() {
-    if (clipboardObject) {
-        const objectClone = clipboardObject.clone();
-        scene.add(objectClone);
-        objectClone.position.x += 1; // Adjust position slightly
-        
-        // Add the cloned object to switchableObjects and make it the selected object
-        switchableObjects.push(objectClone);
-        selectedObject = objectClone;
-        updateBoundingBox(); // Update the bounding box
-        currentIndex = switchableObjects.length - 1; // Update current index to the newly added object
-        console.log('Object pasted from clipboard.');
-    }
-}
-let intervalId = null;
-// Event listeners for the buttons
-// Function to handle holding down a button for continuous execution
-function startContinuousExecution(action) {
-    if (intervalId) return; // Prevent multiple intervals
-
-    action(); // Call the action immediately
-    intervalId = setInterval(action, 100); // Repeat action every 100 ms
-}
-
-// Function to stop the continuous execution
-function stopContinuousExecution() {
-    clearInterval(intervalId);
-    intervalId = null;
-}
-
-// Event listeners for the buttons
-document.getElementById('increaseSizeButton').addEventListener('mousedown', () => startContinuousExecution(increaseSize));
-document.getElementById('decreaseSizeButton').addEventListener('mousedown', () => startContinuousExecution(decreaseSize));
-document.getElementById('increaseHorizontalSizeButton').addEventListener('mousedown', () => startContinuousExecution(increaseHorizontalSize));
-document.getElementById('decreaseHorizontalSizeButton').addEventListener('mousedown', () => startContinuousExecution(decreaseHorizontalSize));
-
-document.getElementById('copyButton').addEventListener('click', copyObject);
-document.getElementById('pasteButton').addEventListener('click', pasteObject);
-
-// Stop continuous execution on mouseup or mouseleave
-document.querySelectorAll('.icon-button').forEach(button => {
-    button.addEventListener('mouseup', stopContinuousExecution);
-    button.addEventListener('mouseleave', stopContinuousExecution);
-});
-
-
 
 function onDocumentKeyDown(event) {
     let stepSize = event.shiftKey ? 0.05 : 0.01; // Grotere stap als Shift is ingedrukt
