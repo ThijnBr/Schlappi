@@ -39,7 +39,7 @@ export function init_upload() {
 }
 
 //uncomment om upload button zonder verify code te krijgen
-init_upload();
+//init_upload();
 
 import * as THREE from 'three';
 import { OBJLoader } from 'three/addons/loaders/OBJLoader.js';
